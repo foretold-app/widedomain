@@ -1,0 +1,23 @@
+{
+    "entryPoints": ["src/Index.bs.js"],
+    "preprocess": [{
+            "re": "^src.+\\.js$",
+            "process": "babel-loader"
+        },
+        {
+            "re": "\\.svg$",
+            "process": "url-loader"
+        },
+        {
+            "re": "\\.less$",
+            "process": "less-loader",
+            "options": {
+                "javascriptEnabled": true
+            }
+        },
+        {
+            "re": "\\.css$",
+            "process": "style-loader!css-loader"
+        }
+    ]
+}
