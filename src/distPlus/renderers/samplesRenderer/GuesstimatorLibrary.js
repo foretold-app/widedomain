@@ -1,5 +1,5 @@
 const _ = require("lodash");
-const { Guesstimator } = require('@foretold/guesstimator/src');
+const { Guesstimator } = require('@foretold/guesstimator/dist');
 
 const stringToSamples = (
   text,
