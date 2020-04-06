@@ -1,6 +1,7 @@
 module type dist = {
   type t;
   type integral;
+
   let minX: t => float;
   let maxX: t => float;
   let mapY: (float => float, t) => t;
@@ -22,6 +23,7 @@ module type dist = {
 module Dist = (T: dist) => {
   type t = T.t;
   type integral = T.integral;
+
   let minX = T.minX;
   let maxX = T.maxX;
   let xTotalRange = (t: t) => maxX(t) -. minX(t);
@@ -40,6 +42,7 @@ module Dist = (T: dist) => {
 
   module Integral = {
     type t = T.integral;
+
     let get = T.integral;
     let xToY = T.integralXtoY;
     let yToX = T.integralYtoX;
@@ -56,6 +59,7 @@ module Dist = (T: dist) => {
 
 module Continuous = {
   type t = DistTypes.continuousShape;
+
   let getShape = (t: t) => t.xyShape;
   let interpolation = (t: t) => t.interpolation;
   let make = (interpolation, xyShape): t => {xyShape, interpolation};
@@ -86,6 +90,7 @@ module Continuous = {
       let toDiscreteProbabilityMass = _ => 0.0;
       let mapY = fn => shapeMap(XYShape.T.mapY(fn));
       let toShape = (t: t): DistTypes.shape => Continuous(t);
+
       let xToY = (f, {interpolation, xyShape}: t) => {
         (
           switch (interpolation) {
@@ -143,22 +148,36 @@ module Discrete = {
   let sortedByX = (t: DistTypes.discreteShape) =>
     t |> XYShape.T.zip |> XYShape.Zipped.sortByX;
   let empty = XYShape.T.empty;
-  let combine = (fn, t1: DistTypes.discreteShape, t2: DistTypes.discreteShape): DistTypes.discreteShape => {
-    XYShape.Combine.combine(~xsSelection=ALL_XS, ~xToYSelection=XYShape.XtoY.stepwiseIfAtX, ~fn, t1, t2) 
-  }
-  let _default0 = ((fn, a,b) => fn(E.O.default(0.0, a), E.O.default(0.0, b)));
-  let reduce = (fn, items) => items |> E.A.fold_left(combine(_default0((fn))), empty);
+  let combine =
+      (fn, t1: DistTypes.discreteShape, t2: DistTypes.discreteShape)
+      : DistTypes.discreteShape => {
+    XYShape.Combine.combine(
+      ~xsSelection=ALL_XS,
+      ~xToYSelection=XYShape.XtoY.stepwiseIfAtX,
+      ~fn,
+      t1,
+      t2,
+    );
+  };
+  let _default0 = (fn, a, b) =>
+    fn(E.O.default(0.0, a), E.O.default(0.0, b));
+  let reduce = (fn, items) =>
+    items |> E.A.fold_left(combine(_default0(fn)), empty);
+
   module T =
     Dist({
       type t = DistTypes.discreteShape;
       type integral = DistTypes.continuousShape;
+
       let integral = (~cache, t) =>
         switch (cache) {
         | Some(c) => c
         | None => Continuous.make(`Stepwise, XYShape.T.accumulateYs((+.), t))
         };
+
       let integralEndY = (~cache, t) =>
         t |> integral(~cache) |> Continuous.lastY;
+
       let minX = XYShape.T.minX;
       let maxX = XYShape.T.maxX;
       let toDiscreteProbabilityMass = _ => 1.0;
@@ -168,6 +187,7 @@ module Discrete = {
       let toDiscrete = t => Some(t);
       let toScaledContinuous = _ => None;
       let toScaledDiscrete = t => Some(t);
+
       let truncate = (~cache=None, i, t: t): DistTypes.discreteShape =>
         t
         |> XYShape.T.zip
@@ -197,7 +217,9 @@ module Discrete = {
     });
 };
 
-// TODO: I think this shouldn't assume continuous/discrete are normalized to 1.0, and thus should not need the discreteProbabilityMassFraction being separate.
+// TODO: I think this shouldn't assume continuous/discrete
+// are normalized to 1.0, and thus should not need
+// the discreteProbabilityMassFraction being separate.
 module Mixed = {
   type t = DistTypes.mixedShape;
   let make =
@@ -235,6 +257,7 @@ module Mixed = {
     Dist({
       type t = DistTypes.mixedShape;
       type integral = DistTypes.continuousShape;
+
       let minX = ({continuous, discrete}: t) => {
         min(Continuous.T.minX(continuous), Discrete.T.minX(discrete));
       };
@@ -256,7 +279,8 @@ module Mixed = {
         DistTypes.MixedPoint.add(c, d);
       };
 
-      // Warning: It's not clear how to update the discreteProbabilityMassFraction, so this may create small errors.
+      // Warning: It's not clear how to update
+      // the discreteProbabilityMassFraction, so this may create small errors.
       let truncate =
           (
             ~cache=None,
@@ -355,7 +379,9 @@ module Mixed = {
         |> XYShape.YtoX.linear(f);
       };
 
-      // TODO: This part really needs to be rethought, I'm quite sure this is just broken. Mapping Ys would change the desired discreteProbabilityMassFraction.
+      // TODO: This part really needs to be rethought, I'm quite sure this
+      // is just broken. Mapping Ys would change
+      // the desired discreteProbabilityMassFraction.
       let mapY =
           (fn, {discrete, continuous, discreteProbabilityMassFraction}: t): t => {
         {
@@ -393,13 +419,16 @@ module Shape = {
           Discrete.T.xToY(f),
           Continuous.T.xToY(f),
         ));
+
       let toShape = (t: t) => t;
+
       let toContinuous =
         mapToAll((
           Mixed.T.toContinuous,
           Discrete.T.toContinuous,
           Continuous.T.toContinuous,
         ));
+
       let toDiscrete =
         mapToAll((
           Mixed.T.toDiscrete,
@@ -427,6 +456,7 @@ module Shape = {
           Discrete.T.toScaledDiscrete,
           Continuous.T.toScaledDiscrete,
         ));
+
       let toScaledContinuous =
         mapToAll((
           Mixed.T.toScaledContinuous,
@@ -434,6 +464,7 @@ module Shape = {
           Continuous.T.toScaledContinuous,
         ));
       let minX = mapToAll((Mixed.T.minX, Discrete.T.minX, Continuous.T.minX));
+
       let integral = (~cache) => {
         mapToAll((
           Mixed.T.Integral.get(~cache),
@@ -441,12 +472,14 @@ module Shape = {
           Continuous.T.Integral.get(~cache),
         ));
       };
+
       let integralEndY = (~cache) =>
         mapToAll((
           Mixed.T.Integral.sum(~cache),
           Discrete.T.Integral.sum(~cache),
           Continuous.T.Integral.sum(~cache),
         ));
+
       let integralXtoY = (~cache, f) => {
         mapToAll((
           Mixed.T.Integral.xToY(~cache, f),
@@ -454,6 +487,7 @@ module Shape = {
           Continuous.T.Integral.xToY(~cache, f),
         ));
       };
+
       let integralYtoX = (~cache, f) => {
         mapToAll((
           Mixed.T.Integral.yToX(~cache, f),
@@ -461,7 +495,9 @@ module Shape = {
           Continuous.T.Integral.yToX(~cache, f),
         ));
       };
+
       let maxX = mapToAll((Mixed.T.maxX, Discrete.T.maxX, Continuous.T.maxX));
+
       let mapY = fn =>
         fmap((
           Mixed.T.mapY(fn),
@@ -525,6 +561,7 @@ module DistPlus = {
     Dist({
       type t = DistTypes.distPlus;
       type integral = DistTypes.distPlus;
+
       let toShape = toShape;
       let toContinuous = shapeFn(Shape.T.toContinuous);
       let toDiscrete = shapeFn(Shape.T.toDiscrete);
@@ -578,7 +615,8 @@ module DistPlus = {
         |> domainIncludedProbabilityMassAdjustment(t);
       };
 
-      // TODO: This part is broken when there is a limit, if this is supposed to be taken into account.
+      // TODO: This part is broken when there is a limit, if this is
+      // supposed to be taken into account.
       let integralYtoX = (~cache as _, f, t: t) => {
         Shape.T.Integral.yToX(~cache=Some(t.integralCache), f, toShape(t));
       };
