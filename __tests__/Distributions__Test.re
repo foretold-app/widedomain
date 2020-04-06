@@ -23,6 +23,7 @@ describe("Shape", () => {
       T.mapY(r => r *. 2.0, continuous) |> getShape |> (r => r.ys),
       [|16., 18.0, 4.0|],
     );
+
     describe("xToY", () => {
       describe("when Linear", () => {
         makeTest(
@@ -47,6 +48,7 @@ describe("Shape", () => {
           {continuous: 2.0, discrete: 0.0},
         );
       });
+
       describe("when Stepwise", () => {
         let continuous = make(`Stepwise, shape);
         makeTest(
@@ -71,11 +73,13 @@ describe("Shape", () => {
         );
       });
     });
+
     makeTest(
       "integral",
       T.Integral.get(~cache=None, continuous) |> getShape,
       {xs: [|1.0, 4.0, 8.0|], ys: [|0.0, 25.5, 47.5|]},
     );
+
     makeTest(
       "toLinear",
       {
@@ -88,6 +92,7 @@ describe("Shape", () => {
         ys: [|0.0, 0.1, 0.1, 5.0, 5.0, 1.0|],
       }),
     );
+
     makeTest(
       "toLinear",
       {
@@ -96,6 +101,7 @@ describe("Shape", () => {
       },
       Some({xs: [|0.0|], ys: [|0.3|]}),
     );
+
     makeTest(
       "integralXToY",
       T.Integral.xToY(~cache=None, 0.0, continuous),
@@ -127,6 +133,7 @@ describe("Shape", () => {
       ys: [|0.3, 0.5, 0.2|],
     };
     let discrete = shape;
+
     makeTest("minX", T.minX(discrete), 1.0);
     makeTest("maxX", T.maxX(discrete), 8.0);
     makeTest(
@@ -210,6 +217,7 @@ describe("Shape", () => {
         },
       )
       |> E.O.toExn("");
+
     makeTest("minX", T.minX(mixed), 1.0);
     makeTest("maxX", T.maxX(mixed), 14.0);
     makeTest(
@@ -291,7 +299,7 @@ describe("Shape", () => {
     );
   });
 
-  describe("Mixed", () => {
+  describe("Mixed 2", () => {
     open Distributions.DistPlus;
     let discrete: DistTypes.xyShape = {
       xs: [|1., 4., 8.|],
@@ -320,6 +328,7 @@ describe("Shape", () => {
         ~guesstimatorString=None,
         (),
       );
+
     makeTest("minX", T.minX(distPlus), 1.0);
     makeTest("maxX", T.maxX(distPlus), 14.0);
     makeTest(
