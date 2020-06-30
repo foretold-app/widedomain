@@ -189,14 +189,14 @@ module Continuous = {
 
       let truncate =
           (leftCutoff: option(float), rightCutoff: option(float), t: t) => {
+
+        let lc = E.O.default(neg_infinity, leftCutoff);
+        let rc = E.O.default(infinity, rightCutoff);
         let truncatedZippedPairs =
           t
           |> getShape
           |> XYShape.T.zip
-          |> XYShape.Zipped.filterByX(x =>
-              x >= E.O.default(neg_infinity, leftCutoff)
-              || x <= E.O.default(infinity, rightCutoff)
-            );
+          |> XYShape.Zipped.filterByX(x => (x >= lc && x <= rc));
 
         let eps = (t |> getShape |> XYShape.T.xTotalRange) *. 0.0001;
 

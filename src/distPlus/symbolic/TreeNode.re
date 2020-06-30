@@ -319,7 +319,7 @@ module TreeNode = {
       | Ok(`DistData(`RenderedShape(rs))) =>
         let truncatedShape =
           rs |> Distributions.Shape.T.truncate(leftCutoff, rightCutoff);
-        Ok(`DistData(`RenderedShape(rs)));
+        Ok(`DistData(`RenderedShape(truncatedShape)));
       | Error(e1) => Error(e1)
       | _ => Error("Could not truncate distribution.")
       };
