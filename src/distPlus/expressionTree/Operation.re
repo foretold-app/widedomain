@@ -59,9 +59,9 @@ module Scale = {
 
   let format = (operation: t, value, scaleBy) =>
     switch (operation) {
-    | `Multiply => {j|verticalMultiply($value, $scaleBy) |j}
-    | `Exponentiate => {j|verticalExponentiate($value, $scaleBy) |j}
-    | `Log => {j|verticalLog($value, $scaleBy) |j}
+    | `Multiply => {j|verticalMultiply($value, $scaleBy)|j}
+    | `Exponentiate => {j|verticalExponentiate($value, $scaleBy)|j}
+    | `Log => {j|verticalLog($value, $scaleBy)|j}
     };
 
   let toIntegralSumCacheFn =
@@ -92,7 +92,7 @@ module T = {
       Pointwise.format(op, nodeToString(t1), nodeToString(t2))
     | `VerticalScaling(scaleOp, t, scaleBy) =>
       Scale.format(scaleOp, nodeToString(t), nodeToString(scaleBy))
-    | `Normalize(t) => "normalize(k" ++ nodeToString(t) ++ ")"
+    | `Normalize(t) => "normalize(" ++ nodeToString(t) ++ ")"
     | `FloatFromDist(floatFromDistOp, t) =>
       DistToFloat.format(floatFromDistOp, nodeToString(t))
     | `Truncate(lc, rc, t) => truncateToString(lc, rc, nodeToString(t))
