@@ -61,6 +61,7 @@ type pareto = {
   [@bs.meth] "pdf": (float, float, float) => float,
   [@bs.meth] "cdf": (float, float, float) => float,
   [@bs.meth] "inv": (float, float, float) => float,
+  [@bs.meth] "mean": (float, float) => float,
 };
 type poisson = {
   .

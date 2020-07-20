@@ -83,6 +83,16 @@ module Beta = {
   let toString = ({alpha, beta}: t) => {j|Beta($alpha,$beta)|j};
 };
 
+module Pareto = {
+  type t = pareto;
+  let pdf = (x, t: t) => Jstat.pareto##pdf(x, t.scale, t.shape);
+  let cdf = (x, t: t) => Jstat.pareto##cdf(x, t.scale, t.shape);
+  let inv = (p, t: t) => Jstat.pareto##inv(p, t.scale, t.shape);
+  let mean = (t: t) => Ok(Jstat.pareto##mean(t.scale, t.shape));
+  let sample = (t: t) => inv(Random.float(1.), t);
+  let toString = ({scale, shape}: t) => {j|Beta($scale,$shape)|j};
+};
+
 module Lognormal = {
   type t = lognormal;
   let pdf = (x, t: t) => Jstat.lognormal##pdf(x, t.mu, t.sigma);
@@ -165,6 +175,7 @@ module T = {
     | `Exponential(n) => Exponential.pdf(x, n)
     | `Cauchy(n) => Cauchy.pdf(x, n)
     | `Lognormal(n) => Lognormal.pdf(x, n)
+    | `Pareto(n) => Pareto.pdf(x, n)
     | `Uniform(n) => Uniform.pdf(x, n)
     | `Beta(n) => Beta.pdf(x, n)
     | `Float(n) => Float.pdf(x, n)
@@ -177,6 +188,7 @@ module T = {
     | `Exponential(n) => Exponential.cdf(x, n)
     | `Cauchy(n) => Cauchy.cdf(x, n)
     | `Lognormal(n) => Lognormal.cdf(x, n)
+    | `Pareto(n) => Pareto.cdf(x, n)
     | `Uniform(n) => Uniform.cdf(x, n)
     | `Beta(n) => Beta.cdf(x, n)
     | `Float(n) => Float.cdf(x, n)
@@ -189,6 +201,7 @@ module T = {
     | `Exponential(n) => Exponential.inv(x, n)
     | `Cauchy(n) => Cauchy.inv(x, n)
     | `Lognormal(n) => Lognormal.inv(x, n)
+    | `Pareto(n) => Pareto.inv(x, n)
     | `Uniform(n) => Uniform.inv(x, n)
     | `Beta(n) => Beta.inv(x, n)
     | `Float(n) => Float.inv(x, n)
@@ -203,6 +216,7 @@ module T = {
     | `Lognormal(n) => Lognormal.sample(n)
     | `Uniform(n) => Uniform.sample(n)
     | `Beta(n) => Beta.sample(n)
+    | `Pareto(n) => Pareto.sample(n)
     | `Float(n) => Float.sample(n);
 
   let doN = (n, fn) => {
@@ -227,6 +241,7 @@ module T = {
     | `Lognormal(n) => Lognormal.toString(n)
     | `Uniform(n) => Uniform.toString(n)
     | `Beta(n) => Beta.toString(n)
+    | `Pareto(n) => Pareto.toString(n)
     | `Float(n) => Float.toString(n);
 
   let min: symbolicDist => float =
@@ -237,6 +252,7 @@ module T = {
     | `Normal(n) => Normal.inv(minCdfValue, n)
     | `Lognormal(n) => Lognormal.inv(minCdfValue, n)
     | `Uniform({low}) => low
+    | `Pareto(n) => 0.0
     | `Beta(n) => Beta.inv(minCdfValue, n)
     | `Float(n) => n;
 
@@ -248,6 +264,7 @@ module T = {
     | `Normal(n) => Normal.inv(maxCdfValue, n)
     | `Lognormal(n) => Lognormal.inv(maxCdfValue, n)
     | `Beta(n) => Beta.inv(maxCdfValue, n)
+    | `Pareto(n) => Pareto.inv(maxCdfValue, n)
     | `Uniform({high}) => high
     | `Float(n) => n;
 
@@ -257,6 +274,7 @@ module T = {
     | `Exponential(n) => Exponential.mean(n)
     | `Cauchy(n) => Cauchy.mean(n)
     | `Normal(n) => Normal.mean(n)
+    | `Pareto(n) => Pareto.mean(n)
     | `Lognormal(n) => Lognormal.mean(n)
     | `Beta(n) => Beta.mean(n)
     | `Uniform(n) => Uniform.mean(n)
@@ -317,13 +335,14 @@ module T = {
     switch (d) {
     | `Float(v) =>
       Discrete(
-        Discrete.make(~integralSumCache=Some(1.0), {xs: [|v|], ys: [|1.0|]}),
+        Discrete.make(
+          ~integralSumCache=Some(1.0),
+          {xs: [|v|], ys: [|1.0|]},
+        ),
       )
     | _ =>
       let xs = interpolateXs(~xSelection=`ByWeight, d, sampleCount);
       let ys = xs |> E.A.fmap(x => pdf(x, d));
-      Continuous(
-        Continuous.make(~integralSumCache=Some(1.0), {xs, ys}),
-      );
+      Continuous(Continuous.make(~integralSumCache=Some(1.0), {xs, ys}));
     };
 };

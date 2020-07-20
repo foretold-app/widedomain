@@ -150,6 +150,13 @@ module MathAdtToDistDst = {
       Ok(`SymbolicDist(`Cauchy({local, scale})))
     | _ => Error("Wrong number of variables in cauchy distribution");
 
+  let pareto:
+    array(arg) => result(ExpressionTypes.ExpressionTree.node, string) =
+    fun
+    | [|Value(scale), Value(shape)|] =>
+      Ok(`SymbolicDist(`Pareto({scale, shape})))
+    | _ => Error("Wrong number of variables in pareto distribution");
+
   let triangular:
     array(arg) => result(ExpressionTypes.ExpressionTree.node, string) =
     fun
@@ -271,6 +278,7 @@ module MathAdtToDistDst = {
     | "exponential" => exponential(args)
     | "cauchy" => cauchy(args)
     | "triangular" => triangular(args)
+    | "pareto" => pareto(args)
     | "mm" =>
       let weights =
         args
@@ -352,6 +360,7 @@ let fromString = str => {
        Inside of this function, MathAdtToDistDst is called whenever a distribution function is encountered.
      */
   let mathJsToJson = str |> pointwiseToRightLogShift |> Mathjs.parseMath;
+  Js.log(mathJsToJson);
   let mathJsParse =
     E.R.bind(mathJsToJson, r => {
       switch (MathJsonToMathJsAdt.run(r)) {

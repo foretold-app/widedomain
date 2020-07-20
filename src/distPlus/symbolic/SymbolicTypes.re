@@ -25,6 +25,11 @@ type cauchy = {
   scale: float,
 };
 
+type pareto = {
+  scale: float,
+  shape: float
+}
+
 type triangular = {
   low: float,
   medium: float,
@@ -34,6 +39,7 @@ type triangular = {
 type symbolicDist = [
   | `Normal(normal)
   | `Beta(beta)
+  | `Pareto(pareto)
   | `Lognormal(lognormal)
   | `Uniform(uniform)
   | `Exponential(exponential)

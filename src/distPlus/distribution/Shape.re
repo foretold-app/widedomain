@@ -212,8 +212,7 @@ let doN = (n, fn) => {
 
 let sample = (t: t): float => {
   let randomItem = Random.float(1.);
-  let bar = t |> T.Integral.yToX(randomItem);
-  bar;
+  T.Integral.yToX(randomItem, t);
 };
 
 let sampleNRendered = (n, dist) => {

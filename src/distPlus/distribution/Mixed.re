@@ -260,10 +260,6 @@ let combineAlgebraically =
     //  let sqtl = sqrt(float_of_int(totalLength(t)));
     //  sqtl > 10 ? T.downsample(int_of_float(sqtl), t) : t;
     //};
-
-  let t1d = t1;
-  let t2d = t2;
-
   // continuous (*) continuous => continuous, but also
   // discrete (*) continuous => continuous (and vice versa). We have to take care of all combos and then combine them:
   let ccConvResult =
